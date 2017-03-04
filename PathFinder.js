@@ -24,6 +24,8 @@ var mKey, nKey,
     lKey;
 var lKeyPressed = false;
 
+var interval;
+
 function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     map = game.add.tilemap('map');
@@ -65,13 +67,22 @@ function create() {
         var tileworldY = pointer.worldY - (pointer.worldY % 32);
         var tileX = Math.floor(pointer.worldX / 32);
         var tileY = Math.floor(pointer.worldY / 32);
-        console.log("character: " + Math.floor(character.x / 32) + "," + Math.floor(character.y / 32));
-        console.log("destination: " + tileX + "," + tileY);
+        console.log("Character: " + Math.floor(character.x / 32) + "," + Math.floor(character.y / 32));
+        console.log("Destination: " + tileX + "," + tileY);
         hidePath();
         path = Astar(tileX, tileY);
-        for (var i = 0; i < path.length; i++) {
-            moveTo(path[i].Tile.x,path[i].Tile.y);
-        }
+        clearInterval(interval);
+        var pathIndex = 0;
+        interval = setInterval(function() {
+            if (path != null) {
+                moveTo(path[pathIndex].Tile.x, path[pathIndex].Tile.y);
+                pathIndex++;
+                if (pathIndex >= path.length) {
+                    character.animations.play('idle');
+                    clearInterval(interval);
+                }
+            }
+        }, characterSpeed);
     });
 }
 
@@ -101,30 +112,19 @@ function update() {
     character.body.velocity.x = 0;
     character.body.velocity.y = 0;
     if (mKey.isDown) {
-        if (characterSpeed > 50) {
+        if (characterSpeed > 100) {
             console.log("Speed Increased");
-            characterSpeed -= 10;
+            characterSpeed -= 30;
+        } else {
+            console.log("Speed Maxed.");
         }
     } else if (nKey.isDown) {
-        if (characterSpeed < 500) {
+        if (characterSpeed < 400) {
             console.log("Speed Decreased");
-            characterSpeed += 10;
+            characterSpeed += 30;
+        } else {
+            console.log("Speed Slowest.");
         }
-    }
-    if (cursors.left.isDown) {
-        character.body.velocity.x = -300;
-        character.animations.play('left');
-    } else if (cursors.right.isDown) {
-        character.body.velocity.x = 300;
-        character.animations.play('right');
-    } else if (cursors.down.isDown) {
-        character.body.velocity.y = 300;
-        character.animations.play('down');
-    } else if (cursors.up.isDown) {
-        character.body.velocity.y = -300;
-        character.animations.play('up');
-    } else {
-        character.animations.play('idle');
     }
 }
 
@@ -133,10 +133,7 @@ function moveTo(toX, toY) {
     move.to({
         x: toX * 32,
         y: toY * 32
-    }, characterSpeed);
-    move.onComplete.add(function() {
-        character.animations.play('idle');
-    }, this);
+    }, 300);
     if (toX > Math.floor(character.x / 32)) {
         character.animations.play('right');
     } else if (toX < Math.floor(character.x / 32)) {
@@ -147,9 +144,8 @@ function moveTo(toX, toY) {
     } else if (toY < Math.floor(character.y / 32)) {
         character.animations.play('up');
     }
-
-    game.time.events.add(500, function() {
-move.start();    }, game);}
+    move.start();
+}
 
 function showPath() {
     if (path != null) {

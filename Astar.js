@@ -34,7 +34,7 @@ function Astar(destX, destY) {
             }
             path.reverse();
         } else { //else search for valid adjacent tiles (not in closed list and are walkable)
-            var adjacentTiles = findNeighbors(currentSquare.Tile
+            var adjacentTiles = findNeighbors(currentSquare.Tile);
           //iterate through adjacent tiles
             for (var i = 0; i < adjacentTiles.length; i++) {
                 //if not in the open list and not already scannned
