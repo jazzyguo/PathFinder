@@ -136,13 +136,27 @@ function moveTo(toX, toY) {
     }, 300);
     if (toX > Math.floor(character.x / 32)) {
         character.animations.play('right');
-    } else if (toX < Math.floor(character.x / 32)) {
+    }
+    if (toX < Math.floor(character.x / 32)) {
         character.animations.play('left');
+    }
+    if (toY < Math.floor(character.y / 32)) {
+        character.animations.play('up');
     }
     if (toY > Math.floor(character.y / 32)) {
         character.animations.play('down');
-    } else if (toY < Math.floor(character.y / 32)) {
+    }
+    if (toX > Math.floor(character.x / 32) && toY == Math.floor(character.y / 32)) {
+        character.animations.play('right');
+    }
+    if (toX < Math.floor(character.x / 32) && toY == Math.floor(character.y / 32)) {
+        character.animations.play('left');
+    }
+    if (toY < Math.floor(character.y / 32) && toX == Math.floor(character.x / 32)) {
         character.animations.play('up');
+    }
+    if (toY > Math.floor(character.y / 32) && toX == Math.floor(character.x / 32)) {
+        character.animations.play('down');
     }
     move.start();
 }
