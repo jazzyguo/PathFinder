@@ -1,59 +1,97 @@
 function Astar(destX, destY) {
-  var openList = [];
-  var closedList = [];
-
+    //add start position to open list
+    var start = Square(null, map.getTile(Math.floor(character.x / 32), Math.floor(character.y / 32), 1));
+    var end = Square(null, map.getTile(destX, destY, 1));
+    var openList = [start];
+    var closedList = [];
+    var path = []; //end path
+    var currentSquare;
+    var nextSquare;
+    var scannedTiles = [];
+    var pathFound = false;
+    while (pathFound == false) {
+        var max = 5000;
+        var min = -1;
+        //search open list for lowest f score
+        for (var i = 0; i < openList.length; i++) {
+            if (openList[i].f < max) {
+                max = openList[i].f;
+                min = i;
+            }
+        }
+        currentSquare = openList.splice(min, 1)[0];
+        console.log("curr" +currentSquare);
+        console.log("openList" + openList);
+        //if current square is the destination
+        if (currentSquare.Tile == end.Tile) {
+            console.log("path found");
+            pathFound = true;
+            closedList.push(currentSquare);
+            //change every square to its parent / working backwards to find the correct path
+            nextSquare = closedList[closedList.length-1];
+            while(nextSquare = nextSquare.Parent){
+                path.push(nextSquare);
+            }
+            path.reverse();
+        } else { //else search for valid adjacent tiles (not in closed list and are walkable)
+            var adjacentTiles = findNeighbors(currentSquare.Tile
+          //iterate through adjacent tiles
+            for (var i = 0; i < adjacentTiles.length; i++) {
+                //if not in the open list and not already scannned
+                if (adjacentTiles[i].scanned == false) {
+                    nextSquare = Square(currentSquare, adjacentTiles[i]);
+                    //calculates g score for new square(parent g + new g )
+                    nextSquare.g = currentSquare.g + calculateScore(adjacentTiles[i], currentSquare);
+                    //adds g score to calculated h score to calculate final f value
+                    nextSquare.f = nextSquare.g + calculateScore(adjacentTiles[i], end);
+                    openList.push(nextSquare);
+                    scannedTiles.push(adjacentTiles[i]);
+                    adjacentTiles[i].scanned = true;
+                }
+            }
+            closedList.push(currentSquare);
+        }
+    }
+    //after pathfinding is done, need to reset all scanned tiles
+    for (var i = 0; i < scannedTiles.length; i++){
+      scannedTiles[i].scanned = false;
+    }
+    return path;
 }
 
-function getTile() {
-    var x = (Math.floor(character.x / 32));
-    var y = (Math.floor(character.y / 32));
-    console.log("character at: " + x + " " + y);
-    var leftTile = map.getTileLeft(1, x, y);
-    console.log("left" + leftTile.x + " " + leftTile.y);
-    var rightTile = map.getTileRight(1, x, y);
-    console.log("right" + rightTile.x + " " + rightTile.y);
-    var aboveTile = map.getTileAbove(1, x, y);
-    console.log("above" + aboveTile.x + " " + aboveTile.y);
-    var belowTile = map.getTileBelow(1, x, y);
-    console.log("below" + belowTile.x + " " + belowTile.y);
+//find all valid adjacent tiles
+function findNeighbors(tile) {
+    var tiles = [];
+    var validTiles = [];
+    var leftTile = map.getTileLeft(1, tile.x, tile.y);
+    var rightTile = map.getTileRight(1, tile.x, tile.y);
+    var aboveTile = map.getTileAbove(1, tile.x, tile.y);
+    var belowTile = map.getTileBelow(1, tile.x, tile.y);
+    tiles.push(leftTile, rightTile, aboveTile, belowTile);
+    for (var i = 0; i < tiles.length; i++) {
+        if (tiles[i].index == 7) {
+            validTiles.push(tiles[i]);
+        }
+    }
+    return validTiles;
 }
 
-function moveTo(sprite, destX, destY){
-  var move = game.add.tween(sprite)
-  move.to({x: destX * 32, y: destY * 32}, characterSpeed);
-  move.onComplete.add(function() {
-    sprite.animations.play('idle');
-  }, this)
-  if(destX > Math.floor(sprite.x / 32)){
-    sprite.animations.play('right');
-  } else if (destX < Math.floor(sprite.x / 32)){
-    sprite.animations.play('left');
-  }
-  if(destY > Math.floor(sprite.y / 32)){
-    sprite.animations.play('down');
-  } else if (destY < Math.floor(sprite.y / 32)){
-    sprite.animations.play('up');
-  }
-  move.start();
+//calculate scores for G and H
+function calculateScore(tile, endTile) {
+    var score = 0;
+    score += Math.abs(tile.x - endTile.x);
+    score += Math.abs(tile.y - endTile.y);
+    return score;
 }
 
-//gets lowest F score adjacent to tile
-function getNextTile(tile) {
-
-}
-
-//calculates F score of tile
-function calculateFScore(tileX, tileY, destX, destY) {
-    var g = 0;
-    var h = 0;
-    var f = 0;
-    g += Math.abs(tileX - Math.floor(character.x / 32));
-    g += Math.abs(tileY - Math.floor(character.y / 32));
-    h += Math.abs(tileX - destX);
-    h += Math.abs(tileY - destY);
-    f = Math.abs(g + h);
-
-    console.log("g: " + g);
-    console.log("h: " + h);
-    console.log("f: " + f);
+function Square(Parent, Tile) {
+    var newSquare = {
+        Parent: Parent,
+        Tile: Tile,
+        x: Tile.x,
+        y: Tile.y,
+        g: 0,
+        f: 0
+    };
+    return newSquare;
 }

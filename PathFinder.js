@@ -13,6 +13,8 @@ var map;
 var layer1;
 var layer2;
 var layer3;
+var path;
+var pathVisible = false;
 
 var character;
 var characterSpeed = 300;
@@ -20,6 +22,7 @@ var characterSpeed = 300;
 var cursors;
 var mKey, nKey,
     lKey;
+var lKeyPressed = false;
 
 function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -63,24 +66,105 @@ function create() {
         var tileX = Math.floor(pointer.worldX / 32);
         var tileY = Math.floor(pointer.worldY / 32);
         console.log("character: " + Math.floor(character.x / 32) + "," + Math.floor(character.y / 32));
-        console.log("tile: " + tileX + "," + tileY);
-        calculateFScore(tileX, tileY, tileX, tileY);
-        moveTo(character, tileX, tileY);
+        console.log("destination: " + tileX + "," + tileY);
+        hidePath();
+        path = Astar(tileX, tileY);
+        for (var i = 0; i < path.length; i++) {
+            moveTo(path[i].Tile.x,path[i].Tile.y);
+        }
     });
 }
 
 function update() {
     game.physics.arcade.collide(character, layer2);
     layer3.bringToTop();
+    if (lKey.isDown) {
+        if (!lKeyPressed) {
+            lKeyPressed = true;
+            if (pathVisible) {
+                console.log("Path Hidden.");
+                pathVisible = false;
+            } else if (!pathVisible) {
+                console.log("Path Visible.");
+                pathVisible = true;
+            }
+        }
+        game.time.events.add(500, function() {
+            lKeyPressed = false;
+        }, game);
+    }
+    if (!pathVisible) {
+        hidePath();
+    } else if (pathVisible) {
+        showPath();
+    }
     character.body.velocity.x = 0;
     character.body.velocity.y = 0;
     if (mKey.isDown) {
         if (characterSpeed > 50) {
+            console.log("Speed Increased");
             characterSpeed -= 10;
         }
     } else if (nKey.isDown) {
         if (characterSpeed < 500) {
+            console.log("Speed Decreased");
             characterSpeed += 10;
+        }
+    }
+    if (cursors.left.isDown) {
+        character.body.velocity.x = -300;
+        character.animations.play('left');
+    } else if (cursors.right.isDown) {
+        character.body.velocity.x = 300;
+        character.animations.play('right');
+    } else if (cursors.down.isDown) {
+        character.body.velocity.y = 300;
+        character.animations.play('down');
+    } else if (cursors.up.isDown) {
+        character.body.velocity.y = -300;
+        character.animations.play('up');
+    } else {
+        character.animations.play('idle');
+    }
+}
+
+function moveTo(toX, toY) {
+    var move = game.add.tween(character);
+    move.to({
+        x: toX * 32,
+        y: toY * 32
+    }, characterSpeed);
+    move.onComplete.add(function() {
+        character.animations.play('idle');
+    }, this);
+    if (toX > Math.floor(character.x / 32)) {
+        character.animations.play('right');
+    } else if (toX < Math.floor(character.x / 32)) {
+        character.animations.play('left');
+    }
+    if (toY > Math.floor(character.y / 32)) {
+        character.animations.play('down');
+    } else if (toY < Math.floor(character.y / 32)) {
+        character.animations.play('up');
+    }
+
+    game.time.events.add(500, function() {
+move.start();    }, game);}
+
+function showPath() {
+    if (path != null) {
+        for (var i = 0; i < path.length; i++) {
+            map.getTile(path[i].Tile.x, path[i].Tile.y, 1).alpha = 0;
+            layer1.dirty = true;
+        }
+    }
+}
+
+function hidePath() {
+    if (path != null) {
+        for (var i = 0; i < path.length; i++) {
+            map.getTile(path[i].Tile.x, path[i].Tile.y, 1).alpha = 1;
+            layer1.dirty = false;
         }
     }
 }
