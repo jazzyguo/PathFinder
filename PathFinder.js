@@ -137,26 +137,14 @@ function moveTo(toX, toY) {
     if (toX > Math.floor(character.x / 32)) {
         character.animations.play('right');
     }
+    if (toY > Math.floor(character.y / 32)) {
+        character.animations.play('down');
+    }
     if (toX < Math.floor(character.x / 32)) {
         character.animations.play('left');
     }
     if (toY < Math.floor(character.y / 32)) {
         character.animations.play('up');
-    }
-    if (toY > Math.floor(character.y / 32)) {
-        character.animations.play('down');
-    }
-    if (toX > Math.floor(character.x / 32) && toY == Math.floor(character.y / 32)) {
-        character.animations.play('right');
-    }
-    if (toX < Math.floor(character.x / 32) && toY == Math.floor(character.y / 32)) {
-        character.animations.play('left');
-    }
-    if (toY < Math.floor(character.y / 32) && toX == Math.floor(character.x / 32)) {
-        character.animations.play('up');
-    }
-    if (toY > Math.floor(character.y / 32) && toX == Math.floor(character.x / 32)) {
-        character.animations.play('down');
     }
     move.start();
 }

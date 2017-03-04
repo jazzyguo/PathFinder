@@ -20,7 +20,7 @@ function Astar(destX, destY) {
             }
         }
         currentSquare = openList.splice(min, 1)[0];
-        console.log("curr" +currentSquare);
+        console.log("curr" + currentSquare);
         console.log("openList" + openList);
         //if current square is the destination
         if (currentSquare.Tile == end.Tile) {
@@ -28,14 +28,14 @@ function Astar(destX, destY) {
             pathFound = true;
             closedList.push(currentSquare);
             //change every square to its parent / working backwards to find the correct path
-            nextSquare = closedList[closedList.length-1];
-            while(nextSquare = nextSquare.Parent){
+            nextSquare = closedList[closedList.length - 1];
+            while (nextSquare = nextSquare.Parent) {
                 path.push(nextSquare);
             }
             path.reverse();
         } else { //else search for valid adjacent tiles (not in closed list and are walkable)
             var adjacentTiles = findNeighbors(currentSquare.Tile);
-          //iterate through adjacent tiles
+            //iterate through adjacent tiles
             for (var i = 0; i < adjacentTiles.length; i++) {
                 //if not in the open list and not already scannned
                 if (adjacentTiles[i].scanned == false) {
@@ -53,8 +53,8 @@ function Astar(destX, destY) {
         }
     }
     //after pathfinding is done, need to reset all scanned tiles
-    for (var i = 0; i < scannedTiles.length; i++){
-      scannedTiles[i].scanned = false;
+    for (var i = 0; i < scannedTiles.length; i++) {
+        scannedTiles[i].scanned = false;
     }
     return path;
 }
@@ -67,7 +67,12 @@ function findNeighbors(tile) {
     var rightTile = map.getTileRight(1, tile.x, tile.y);
     var aboveTile = map.getTileAbove(1, tile.x, tile.y);
     var belowTile = map.getTileBelow(1, tile.x, tile.y);
-    tiles.push(leftTile, rightTile, aboveTile, belowTile);
+    var topRightTile = map.getTileRight(1, aboveTile.x, aboveTile.y);
+    var topLeftTile = map.getTileLeft(1, aboveTile.x, aboveTile.y);
+    var bottomRightTile = map.getTileRight(1, belowTile.x, belowTile.y);
+    var bottomLeftTile = map.getTileLeft(1, belowTile.x, belowTile.y);
+    tiles.push(leftTile, rightTile, aboveTile, belowTile,
+        topRightTile, topLeftTile, bottomRightTile, bottomLeftTile);
     for (var i = 0; i < tiles.length; i++) {
         if (tiles[i].index == 7) {
             validTiles.push(tiles[i]);
@@ -76,12 +81,12 @@ function findNeighbors(tile) {
     return validTiles;
 }
 
-//calculate scores for G and H
+//calculate scores for G and H using euclidean distance
 function calculateScore(tile, endTile) {
     var score = 0;
-    score += Math.abs(tile.x - endTile.x);
-    score += Math.abs(tile.y - endTile.y);
-    return score;
+    score += Math.pow((tile.x - endTile.x), 2);
+    score += Math.pow((tile.y - endTile.y), 2);
+    return Math.sqrt(score);
 }
 
 function Square(Parent, Tile) {
