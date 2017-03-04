@@ -36,28 +36,29 @@ function create() {
     map.addTilesetImage('tree2-final', 'tree');
     map.addTilesetImage('Overworld', 'Overworld');
     map.setCollisionBetween(1, 30);
-
+    //create layers
     layer1 = map.createLayer('Ground');
     layer2 = map.createLayer('Collision');
     layer3 = map.createLayer('Foreground');
     layer1.resizeWorld();
     layer2.resizeWorld();
     layer3.resizeWorld();
-
+    //add chracter
     character = game.add.sprite(96, 96, 'character');
     game.physics.arcade.enable(character);
     character.body.collideWorldBounds = true;
     character.scale.setTo(1.5, 1.5);
     character.anchor.setTo(.5, .75);
     character.body.setSize(16, 16, 0, 16);
-
+    //add character animations
     character.animations.add('idle', [9, 10, 11, 12], 10, true);
     character.animations.add('up', [34, 35, 36, 37], 10, true);
     character.animations.add('down', [0, 1, 2, 3], 10, true);
     character.animations.add('left', [51, 52, 53, 54], 10, true);
     character.animations.add('right', [17, 18, 19, 20], 10, true);
+    character.animations.play('idle');
     game.camera.follow(character);
-
+    //create game input
     cursors = game.input.keyboard.createCursorKeys();
     mKey = game.input.keyboard.addKey(Phaser.Keyboard.M);
     nKey = game.input.keyboard.addKey(Phaser.Keyboard.N);
@@ -73,9 +74,25 @@ function create() {
         path = Astar(tileX, tileY);
         clearInterval(interval);
         var pathIndex = 0;
+        //set interval to move sprite one tile at a time torwards its path
         interval = setInterval(function() {
             if (path != null) {
                 moveTo(path[pathIndex].Tile.x, path[pathIndex].Tile.y);
+                if (path[pathIndex].Tile.x > Math.floor(character.x / 32)) {
+                    character.animations.play('right');
+                } else if (path[pathIndex].Tile.x < Math.floor(character.x / 32)) {
+                    character.animations.play('left');
+                } else if (path[pathIndex].Tile.y > Math.floor(character.y / 32)) {
+                    character.animations.play('down');
+                } else if (path[pathIndex].Tile.y < Math.floor(character.y / 32)) {
+                    character.animations.play('up');
+                }
+                if(path[pathIndex].Tile.y > Math.floor(character.y / 32) && path[pathIndex].Tile.x == tileX) {
+                  character.animations.play('down');
+                }
+                if(path[pathIndex].Tile.y < Math.floor(character.y / 32) && path[pathIndex].Tile.x == tileX) {
+                  character.animations.play('up');
+                }
                 pathIndex++;
                 if (pathIndex >= path.length) {
                     character.animations.play('idle');
@@ -134,18 +151,6 @@ function moveTo(toX, toY) {
         x: toX * 32,
         y: toY * 32
     }, 300);
-    if (toX > Math.floor(character.x / 32)) {
-        character.animations.play('right');
-    }
-    if (toY > Math.floor(character.y / 32)) {
-        character.animations.play('down');
-    }
-    if (toX < Math.floor(character.x / 32)) {
-        character.animations.play('left');
-    }
-    if (toY < Math.floor(character.y / 32)) {
-        character.animations.play('up');
-    }
     move.start();
 }
 

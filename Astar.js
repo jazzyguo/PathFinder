@@ -74,7 +74,7 @@ function findNeighbors(tile) {
     tiles.push(leftTile, rightTile, aboveTile, belowTile,
         topRightTile, topLeftTile, bottomRightTile, bottomLeftTile);
     for (var i = 0; i < tiles.length; i++) {
-        if (tiles[i].index == 7) {
+        if (tiles[i].index == 7) { //index 7 = walkable
             validTiles.push(tiles[i]);
         }
     }
